@@ -1,9 +1,6 @@
 #!/bin/bash
-# Get an updated config.sub and config.guess
-cp $BUILD_PREFIX/share/gnuconfig/config.* .
 
 set -e
-IFS=$' \t\n' # workaround for conda 4.2.13+toolchain bug
 
 # Adopt a Unix-friendly path if we're on Windows (see bld.bat).
 [ -n "$PATH_OVERRIDE" ] && export PATH="$PATH_OVERRIDE"
@@ -22,15 +19,9 @@ else
     uprefix="$PREFIX"
 fi
 
-# Cf. https://github.com/conda-forge/staged-recipes/issues/673, we're in the
-# process of excising Libtool files from our packages. Existing ones can break
-# the build while this happens. We have "/." at the end of $uprefix to be safe
-# in case the variable is empty.
-find $uprefix/. -name '*.la' -delete
-
 # On Windows we need to regenerate the configure scripts.
 if [ -n "$CYGWIN_PREFIX" ] ; then
-    am_version=1.15 # keep sync'ed with meta.yaml
+    am_version=1.16 # keep sync'ed with meta.yaml
     export ACLOCAL=aclocal-$am_version
     export AUTOMAKE=automake-$am_version
     autoreconf_args=(
@@ -46,6 +37,9 @@ if [ -n "$CYGWIN_PREFIX" ] ; then
     platlibs=$(cd $(dirname $($CC --print-prog-name=ld))/../sysroot/usr/lib && pwd -W)
     test -f $platlibs/libws2_32.a || { echo "error locating libws2_32" ; exit 1 ; }
     export LDFLAGS="$LDFLAGS -L$platlibs"
+else
+    # Get an updated config.sub and config.guess
+    cp $BUILD_PREFIX/share/gnuconfig/config.* .
 fi
 
 export PKG_CONFIG_LIBDIR=$uprefix/lib/pkgconfig:$uprefix/share/pkgconfig
@@ -62,11 +56,9 @@ if [[ "${CONDA_BUILD_CROSS_COMPILATION}" == "1" ]] ; then
         --enable-malloc0returnsnull
     )
 fi
+
 ./configure "${configure_args[@]}"
 make -j$CPU_COUNT
 make install
-rm -rf $uprefix/share/man $uprefix/share/doc/${PKG_NAME#xorg-}
 
-# Remove any new Libtool files we may have installed. It is intended that
-# conda-build will eventually do this automatically.
-find $uprefix/. -name '*.la' -delete
+rm -rf $uprefix/share/man $uprefix/share/doc/${PKG_NAME#xorg-}

@@ -3,20 +3,18 @@
 {% set name = "xorg-" ~ xorg_name %}
 {% set version = "1.0.12" %}
 {% set sha256 = "ce706619a970a580a0e35e9b5c98bdd2af243ac6494c65f44608a89a86100126" %}
-{% set am_version = "1.15" %} # keep synchronized with build.sh
+{% set am_version = "1.16" %} # keep synchronized with build.sh
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
   url: https://www.x.org/releases/individual/{{ xorg_category }}/{{ xorg_name }}-{{ version }}.tar.gz
   sha256: {{ sha256 }}
 
 build:
   number: 1
-  detect_binary_files_with_prefix: true
   run_exports:
     - {{ pin_subpackage(name|lower) }}
 
