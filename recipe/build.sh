@@ -19,6 +19,14 @@ else
     uprefix="$PREFIX"
 fi
 
+configure_args=(
+    --prefix=$mprefix
+    --disable-static
+    --disable-dependency-tracking
+    --disable-selective-werror
+    --disable-silent-rules
+)
+
 # On Windows we need to regenerate the configure scripts.
 if [ -n "$CYGWIN_PREFIX" ] ; then
     am_version=1.16 # keep sync'ed with meta.yaml
@@ -26,6 +34,7 @@ if [ -n "$CYGWIN_PREFIX" ] ; then
     export AUTOMAKE=automake-$am_version
     autoreconf_args=(
         --force
+        --verbose
         --install
         -I "$mprefix/share/aclocal"
         -I "$BUILD_PREFIX_M/Library/usr/share/aclocal"
@@ -40,16 +49,20 @@ if [ -n "$CYGWIN_PREFIX" ] ; then
 else
     # Get an updated config.sub and config.guess
     cp $BUILD_PREFIX/share/gnuconfig/config.* .
+
+    autoreconf_args=(
+        --force
+        --verbose
+        --install
+        -I "${PREFIX}/share/aclocal"
+        -I "${BUILD_PREFIX}/share/aclocal"
+    )
+    autoreconf "${autoreconf_args[@]}"
+
+    configure_args+=("--build=${BUILD}")
 fi
 
 export PKG_CONFIG_LIBDIR=$uprefix/lib/pkgconfig:$uprefix/share/pkgconfig
-configure_args=(
-    --prefix=$mprefix
-    --disable-static
-    --disable-dependency-tracking
-    --disable-selective-werror
-    --disable-silent-rules
-)
 
 if [[ "${CONDA_BUILD_CROSS_COMPILATION}" == "1" ]] ; then
     configure_args+=(
