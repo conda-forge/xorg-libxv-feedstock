@@ -1,8 +1,8 @@
 {% set xorg_name = "libXv" %}
 {% set xorg_category = "lib" %}
 {% set name = "xorg-" ~ xorg_name %}
-{% set version = "1.0.12" %}
-{% set sha256 = "ce706619a970a580a0e35e9b5c98bdd2af243ac6494c65f44608a89a86100126" %}
+{% set version = "1.0.13" %}
+{% set sha256 = "9a0c31392b8968a4f29a0ad9c51e7ce225bcec3c4cbab9f2a241f921776b2991" %}
 {% set am_version = "1.16" %} # keep synchronized with build.sh
 
 package:
@@ -14,7 +14,7 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 2
+  number: 0
   run_exports:
     - {{ pin_subpackage(name|lower) }}
 
